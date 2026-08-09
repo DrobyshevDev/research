@@ -8,4 +8,4 @@ mkdocs-static-i18n>=1.3.1      # a second language is one file per page, not a f
 # check_notes.py parses front matter with it. Already present as a transitive
 # dependency of mkdocs; named here because the script imports it directly and a
 # transitive dependency is not a promise.
-PyYAML>=6.0
+PyYAML>=6.0.3
