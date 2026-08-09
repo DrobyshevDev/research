@@ -94,7 +94,11 @@ def check_date(value: object) -> dt.date:
             f"`date` must be an unquoted ISO date such as 2026-08-10, got {value!r}."
         )
 
-    if value > dt.date.today():
+    # One day of slack, because the runner is on UTC and the writer is not. A
+    # note dated on the evening of the 10th in Moscow is still the 9th in UTC,
+    # and failing that build teaches nobody anything. The check is here to
+    # catch a mistyped year, and 2099 clears any tolerance you like.
+    if value > dt.date.today() + dt.timedelta(days=1):
         raise NoteError(f"`date` is in the future: {value.isoformat()}.")
 
     return value
