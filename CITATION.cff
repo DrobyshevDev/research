@@ -1,0 +1,27 @@
+cff-version: 1.2.0
+title: >-
+  research — open reading notes on machine learning, reinforcement learning and
+  neuroscience
+message: >-
+  If a note here informed your work, cite the collection with this entry and
+  link the individual note by its page URL.
+abstract: >-
+  A collection of open reading notes and essays on machine learning,
+  reinforcement learning, deep learning, neuroscience and meta-research. Each
+  note separates what a paper claims from what its evidence supports, and
+  declares the sources it rests on in machine-checkable front matter.
+authors:
+  - family-names: Drobyshev
+    given-names: Denis
+repository-code: https://github.com/DrobyshevDev/research
+url: https://drobyshevdev.github.io/research/
+license: CC-BY-4.0
+keywords:
+  - machine-learning
+  - reinforcement-learning
+  - deep-learning
+  - neuroscience
+  - dopamine
+  - meta-research
+  - reproducibility
+  - open-notebook-science

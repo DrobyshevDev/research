@@ -1,0 +1,6 @@
+* text=auto eol=lf
+
+# GitHub's language stats otherwise call this a Python repository on the
+# strength of one script. It is prose.
+docs/** linguist-documentation
+*.md linguist-detectable=false

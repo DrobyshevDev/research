@@ -1,0 +1,24 @@
+/* The theme is configured with `font: false`, which stops Material pulling
+   Roboto from Google Fonts on every page load. That request buys the reader
+   nothing and costs them a third party, so the typography is a system stack
+   resolved locally instead. */
+
+:root {
+  --md-text-font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+  --md-code-font: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
+    "Liberation Mono", monospace;
+}
+
+/* Prose is read, not scanned. Material's default measure runs wide on a large
+   display, where a long line costs the eye the return sweep. */
+.md-content__inner {
+  max-width: 46rem;
+}
+
+/* The front matter promises a status on every note. Rendering `draft` and
+   `reviewed` as plain inline code keeps them legible in the section index
+   without inventing a badge system that then needs maintaining. */
+.md-typeset code {
+  font-size: 0.85em;
+}

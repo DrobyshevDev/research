@@ -1,0 +1,94 @@
+site_name: research
+site_description: >-
+  Open reading notes on machine learning, reinforcement learning, neuroscience
+  and the methods used to check a claim. Every note names what it rests on.
+site_url: https://drobyshevdev.github.io/research/
+repo_url: https://github.com/DrobyshevDev/research
+repo_name: DrobyshevDev/research
+edit_uri: edit/main/docs/
+copyright: Prose — CC BY 4.0, code — MIT.
+
+theme:
+  name: material
+  language: en
+  # The theme otherwise pulls Roboto from Google Fonts on every page load. The
+  # typography here is a system stack set in theme.css, so that request buys
+  # the reader nothing and costs them a third party.
+  font: false
+  features:
+    - navigation.tracking
+    - navigation.sections
+    - navigation.indexes
+    - navigation.top
+    - content.code.copy
+    - content.action.edit
+    - search.suggest
+    - search.highlight
+    - toc.follow
+  # One scheme, dark, matching the other sites in the organisation. A toggle
+  # would mean designing the whole thing twice, and the second design is always
+  # the one nobody checks.
+  palette:
+    scheme: slate
+    primary: black
+    accent: indigo
+  icon:
+    repo: fontawesome/brands/github
+
+plugins:
+  - search
+  # Suffix structure: `note.md` and `note.ru.md` sit beside each other, so a
+  # translation is one file next to the original rather than a parallel tree
+  # that drifts out of date silently.
+  - i18n:
+      docs_structure: suffix
+      languages:
+        - locale: en
+          default: true
+          name: English
+          build: true
+        - locale: ru
+          name: Русский
+          build: true
+          nav_translations:
+            Notes: Разборы
+            Essays: Эссе
+            Method: Метод
+            How to read this: Как это читать
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+      toc_depth: 3
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.caret
+  - pymdownx.tilde
+  - pymdownx.arithmatex:
+      generic: true
+
+extra_css:
+  - assets/theme.css
+
+nav:
+  - research: index.md
+  - How to read this: how-to-read.md
+  - Notes: notes/index.md
+  - Essays: essays/index.md
+  - Method: meta/index.md
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/DrobyshevDev/research

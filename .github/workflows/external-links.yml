@@ -1,0 +1,47 @@
+name: External links
+
+# Outbound links rot on someone else's schedule, so this runs weekly rather
+# than on every push, and opens an issue instead of failing a pull request.
+#
+# Here the stakes are higher than on the site: a source link is the evidence a
+# note rests on, and a note whose DOI no longer resolves has quietly become an
+# assertion. `check_notes.py` catches a malformed URL on every push; this
+# catches a dead one.
+on:
+  schedule:
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  lychee:
+    name: Check outbound links
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Run lychee
+        id: lychee
+        uses: lycheeverse/lychee-action@v2
+        with:
+          # 403 and 429 are accepted because publisher sites rate-limit and
+          # block datacentre traffic: they say something about the runner, not
+          # about the link.
+          args: >-
+            --no-progress
+            --max-retries 3
+            --timeout 20
+            --accept 200,206,403,429
+            README.md README.ru.md 'docs/**/*.md'
+          fail: false
+
+      - name: Open an issue when something is broken
+        if: steps.lychee.outputs.exit_code != 0
+        uses: peter-evans/create-issue-from-file@v6
+        with:
+          title: Broken source and outbound links
+          content-filepath: ./lychee/out.md
+          labels: maintenance

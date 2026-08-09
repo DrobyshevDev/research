@@ -1,0 +1,28 @@
+version: 2
+
+updates:
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+    commit-message:
+      prefix: "ci"
+    groups:
+      actions:
+        patterns: ["*"]
+
+  - package-ecosystem: pip
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+    commit-message:
+      prefix: "deps"
+    # One group, because everything here builds the same artefact: the site.
+    # Splitting it would produce several pull requests that are only ever
+    # reviewed together.
+    groups:
+      docs:
+        patterns: ["*"]
+    open-pull-requests-limit: 5

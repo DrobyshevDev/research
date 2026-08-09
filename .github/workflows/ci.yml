@@ -1,0 +1,63 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  notes:
+    name: Notes keep the contract
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - run: pip install -r requirements.txt
+
+      # The README promises every note names what it rests on. This is the
+      # promise being enforced rather than restated.
+      - run: python scripts/check_notes.py docs
+
+  site:
+    name: Site builds
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - run: pip install -r requirements.txt
+
+      # --strict fails on a broken internal link or a page missing from the
+      # navigation, which is the breakage nobody notices until a reader hits it.
+      - run: mkdocs build --strict
+
+  ci:
+    name: CI
+    runs-on: ubuntu-latest
+    if: always()
+    needs: [notes, site]
+    steps:
+      # One aggregate check to require in branch protection. Without it, adding
+      # a job silently leaves it unrequired, and a red job stops blocking merges.
+      - name: Fail if any job did not succeed
+        if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')
+        run: |
+          echo "One or more jobs failed:"
+          echo '${{ toJSON(needs) }}'
+          exit 1
+      - run: echo "All checks passed."
