@@ -45,6 +45,34 @@ editing one file rather than two.
 `mkdocs build --strict` will not catch that on its own: a page outside the
 navigation is an INFO line it prints before building the site anyway.
 
+## How long a note is
+
+Long enough to be read instead of the paper, not long enough to be read instead
+of thinking.
+
+The README promises a note is readable without the original open. That rules
+out the abstract-with-links shape, which is the one that comes out if you write
+quickly: a claim, a gesture at the evidence, a conclusion. It is a bookmark
+with paragraph breaks.
+
+A note that keeps the promise usually has to:
+
+- **explain the mechanism, not only the finding.** If the result depends on an
+  algorithm, the algorithm gets stated - the equation if there is one, and what
+  each term means. A reader should not have to already know it;
+- **carry the numbers and the conditions.** How many subjects, how many seeds,
+  which comparison, what size of effect. A result quoted without its conditions
+  cannot be argued with, which means it cannot be checked;
+- **take the objections one at a time.** Later work that complicates the
+  finding gets its own subsection and its own mechanism, not a sentence in a
+  list. Two papers disagreeing is the interesting part, not an aside;
+- **say what would falsify it, concretely.** "More work is needed" is not that.
+  Name the result that would undo each section.
+
+There is no word count, because a target invites padding. The test is whether a
+reader who has not opened the paper can follow the argument and find where it
+would break.
+
 ## Translations
 
 A translation sits beside its original as `name.ru.md`, not in a parallel tree,
