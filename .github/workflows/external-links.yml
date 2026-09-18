@@ -27,6 +27,9 @@ jobs:
         id: lychee
         uses: lycheeverse/lychee-action@v2
         with:
+          # Pinned: an unpinned checker changes the meaning of a green run
+          # without a commit. Moving it is a decision, so it is made here.
+          lycheeVersion: v0.24.2
           # 403 and 429 are accepted because publisher sites rate-limit and
           # block datacentre traffic: they say something about the runner, not
           # about the link.
@@ -35,13 +38,39 @@ jobs:
             --max-retries 3
             --timeout 20
             --accept 200,206,403,429
+            --root-dir "${{ github.workspace }}"
             README.md README.ru.md 'docs/**/*.md'
           fail: false
 
-      - name: Open an issue when something is broken
+      - name: Find the standing link issue
+        id: standing
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          number=$(gh issue list \
+            --repo "$GITHUB_REPOSITORY" \
+            --state open \
+            --label maintenance \
+            --search 'in:title "Broken source and outbound links"' \
+            --limit 1 --json number --jq '.[0].number // empty')
+          echo "number=${number}" >> "$GITHUB_OUTPUT"
+
+      - name: Report into the standing issue
         if: steps.lychee.outputs.exit_code != 0
         uses: peter-evans/create-issue-from-file@v6
         with:
+          # One issue, rewritten in place, so a source that has been dead for a
+          # month reads as one open problem rather than four notifications.
+          issue-number: ${{ steps.standing.outputs.number }}
           title: Broken source and outbound links
           content-filepath: ./lychee/out.md
           labels: maintenance
+
+      - name: Close the standing issue once every link resolves
+        if: steps.lychee.outputs.exit_code == 0 && steps.standing.outputs.number != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh issue close "${{ steps.standing.outputs.number }}" \
+            --repo "$GITHUB_REPOSITORY" \
+            --comment "Every source resolved on the run for \`${{ github.sha }}\`. A future break reopens this issue automatically."
