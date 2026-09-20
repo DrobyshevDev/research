@@ -266,6 +266,78 @@ def check_orphans(docs_root: Path, notes: list[Path]) -> list[str]:
     return problems
 
 
+#: The sentence on the front page that lists what the repository is about.
+#: Matched rather than parsed, because if it is rewritten the check has to be
+#: rewritten with it -- a topic list nobody keeps current is the thing being
+#: guarded against.
+README_TOPICS = re.compile(
+    r"^Topics run across (.+?)\. The\s+list grows", re.MULTILINE | re.DOTALL
+)
+
+#: A note declares its topics as kebab-case; the README writes prose. "dopamine
+#: and reward prediction" covers the `dopamine` topic, "reinforcement learning"
+#: covers `reinforcement-learning`. Matching on the words rather than on the
+#: exact phrase is deliberate: the prose is for a reader and should stay prose.
+def _mentions(sentence: str, topic: str) -> bool:
+    return all(word in sentence.lower() for word in topic.split("-"))
+
+
+def check_readme_topics(root: Path, notes: list[Path]) -> tuple[list[str], list[str]]:
+    """The front page's topic list against the topics the notes actually declare.
+
+    Two directions, and only one of them is a failure.
+
+    A topic a note declares and the README does not mention is drift: the note
+    landed, the front page did not follow, and a reader is told the repository
+    is about less than it is. That fails.
+
+    A topic the README claims and no note covers yet is not drift -- it is a
+    repository that says where it is going, which the same sentence says
+    outright ("the list grows by what gets read"). Reported, never failed:
+    turning an intention into a red build teaches people to delete the check,
+    not to write the note.
+    """
+    readme = root / "README.md"
+    if not readme.is_file():
+        return [f"{readme.name} is missing, so its topic list cannot be checked"], []
+
+    sentence = README_TOPICS.search(readme.read_text(encoding="utf-8"))
+    if sentence is None:
+        gone = (
+            "README.md: the sentence listing the topics is gone, so nothing holds "
+            "the front page to what the notes are about"
+        )
+        return [gone], []
+    claimed = sentence.group(1)
+
+    declared: set[str] = set()
+    for note in notes:
+        front = parse_front_matter(read_note(note))
+        for topic in front.get("topics") or []:
+            if isinstance(topic, str):
+                declared.add(topic)
+
+    missing = sorted(t for t in declared if not _mentions(claimed, t))
+    problems = [
+        f"README.md: notes declare the topic `{topic}` and the front page does not "
+        "mention it"
+        for topic in missing
+    ]
+
+    # The other direction, as a note rather than a failure. The sentence is an
+    # English list -- "a, b, c, and d" -- so the commas are the separators and a
+    # leading "and" belongs to the last item. Splitting on the word `and` as
+    # well looked tidier and was wrong twice: it cuts "dopamine and reward
+    # prediction" into two half-topics no note could ever cover, and without a
+    # word boundary it cuts inside any word that contains those letters.
+    unwritten: list[str] = []
+    for piece in claimed.split(","):
+        phrase = re.sub(r"^and\s+", "", " ".join(piece.split()))
+        if phrase and not any(_mentions(phrase, topic) for topic in declared):
+            unwritten.append(phrase)
+    return problems, unwritten
+
+
 def main(argv: list[str]) -> int:
     if len(argv) > 2:
         print(__doc__, file=sys.stderr)
@@ -282,6 +354,9 @@ def main(argv: list[str]) -> int:
         problems.extend(check_note(path, docs_root))
     problems.extend(check_orphans(docs_root, notes))
 
+    topic_problems, unwritten = check_readme_topics(docs_root.parent, notes)
+    problems.extend(topic_problems)
+
     if problems:
         print(f"{len(problems)} problem(s) in {len(notes)} note(s):\n")
         for problem in problems:
@@ -290,6 +365,17 @@ def main(argv: list[str]) -> int:
         return 1
 
     print(f"{len(notes)} note(s) checked, all keep the front-matter contract.")
+    if unwritten:
+        print()
+        print(
+            "The front page names topics no note covers yet: "
+            + ", ".join(unwritten)
+            + "."
+        )
+        print(
+            "That is the plan, not a defect -- said here so it stays a plan "
+            "somebody remembers."
+        )
     return 0
 
 
